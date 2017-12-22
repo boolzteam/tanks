@@ -43,8 +43,8 @@ int main()
 	printf("Enter number of players\n");
 	scanf("%d", &players);
 	Arr = initialize(players,GameBoard);
-	for (int i = 0; i < players; i++)
-		GameBoard[Arr[i]->x][Arr[i]->y] = Arr[i]->name;
+	//for (int i = 0; i < players; i++)
+		//GameBoard[Arr[i]->x][Arr[i]->y] = Arr[i]->name;
 	Play(GameBoard, Arr, players);
 	PrintBoard(GameBoard);
 	for (int i = 0; i < players; i++) // free memory
@@ -176,41 +176,64 @@ void PrintBoard(char Board[N][M])
 Tank ** initialize(int players,char Board[N][M])
 {
 	char c = 'A';
-	
+	srand(time(NULL));
 	Tank ** Arr = (Tank*)malloc((sizeof(Tank))*players);
 	for (int i = 0; i < players; i++, c++)
 	{
-		int size;
+		
 		Arr[i] = (Tank*)malloc(sizeof(Tank));
 		Arr[i]->live = TRUE;
 		Arr[i]->life = 2;
 		Arr[i]->name = c;
-		Arr[i]->x = i + 10;
-		Arr[i]->y = 48+(i*5);
-		/*srand(time(NULL));
 
-		size = M / players;
-		switch (players) 
+		if (i == players-1)
 		{
-		case 1:
-			printf("You have some serious troubles.\n");
-			break;
-		case 2:
-			Arr[i]->y = rand() % size;
-			printf("HI:%d\n", Arr[i]->y);
+			switch (players)
+			{
+			case 1:
+				printf("You have some serious troubles.\n");
+				break;
+			case 2:
+				Arr[0]->y = rand() % 111;
+				Arr[0]->x = 49;
+				Arr[1]->y = 111 + (rand() % 111);
+				Arr[1]->x = 49;
+				break;
+			case 3:
+				Arr[0]->y = rand() % 73;
+				Arr[0]->x = 49;
+				Arr[1]->y = 73 + (rand() % 112);
+				Arr[1]->x = 49;
+				Arr[2]->y = 146 + (rand() % 112);
+				Arr[2]->x = 49;
+			case 4:
+				Arr[0]->y = rand() % 55;
+				Arr[0]->x = 49;
+				Arr[1]->y = 55 + (rand() % 55);
+				Arr[1]->x = 49;
+				Arr[2]->y = 110 + (rand() % 55);
+				Arr[2]->x = 49;
+				Arr[3]->y = 165 + (rand() % 55);
+				Arr[3]->x = 49;
+			}
+			for (int j = 0; j < players; j++)
+			{
 
+				if (Board[Arr[j]->x][Arr[j]->y] != ' ')
+					while (Board[Arr[j]->x - 1][Arr[j]->y] != ' ')
+						Arr[j]->x = Arr[j]->x - 1;
+				printf("bla\n");
+				Board[Arr[j]->x-1][Arr[j]->y] = Arr[j]->name;
+			}
 		}
 		
 		
-		//Arr[i]->y = rand() % N; // אופקי
-
-	//	printf("HI:%d\n", Arr[i]->y);
 		
-		Arr[i]->x = 49;   // אנכי
-		if (Board[Arr[i]->x][Arr[i]->y] != '-')
-			while (Board[Arr[i]->x - 1][Arr[i]->y] != '-')
-				Arr[i]->y = Arr[i]->y - 1;
-		Board[Arr[i]->x][Arr[i]->y] = Arr[i]->name;*/
+		
+		
+	
+
+		
 	}
 
 	return Arr;
@@ -290,12 +313,41 @@ void Directshot(Tank* tank, char map[N][M])
 	tempY = tank->y;
 	for (int i = 1; i <= power; i++)
 	{
+		if (angel < 90)
+		{
+			tempX = tempX - radian;
+			tempY = tempY + 1;
+		}
+		else if (angel > 90 && angel < 180)
+		{
+			tempX = tempX - radian;
+			tempY = tempY - 1;
+		}
+		else if (angel > 180 && angel < 270)
+		{
+			tempX = tempX + radian;
+			tempY = tempY - 1;
+		}
+		else if(angel > 270 && angel < 360 )
+		{
+			tempX = tempX + radian;
+			tempY = tempY + 1;
+		}
+		else if(angel==0 || angel==360)
+			tempY = tempY + 1;
+		else if(angel==90)
+			tempX = tempX - radian;
+		else if(angel==180)
+			tempY = tempY - 1;
+		else if(angel==270)
+			tempX = tempX + radian;
+		/*
 		tempX = tempX - radian;
 		if (angel > 90 && angel < 270)
 			tempY = tempY - 1;
 		else
 			tempY = tempY + 1;
-		
+		*/
 
 		if (map[tempX][(int)round(tempY)] == 'A' || map[tempX][(int)round(tempY)] == 'B' || map[tempX][(int)round(tempY)] == 'C' || map[tempX][(int)round(tempY)] == 'D')
 		{
@@ -312,6 +364,7 @@ void Directshot(Tank* tank, char map[N][M])
 				break;
 			}
 		}
+		printf("tempX:%d\n", tempX);
 		tempMap[tempX][(int)round(tempY)] = '*'; //print 1 shot
 	}
 	tempY = round(tempY); // final Y index.
