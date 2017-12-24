@@ -17,15 +17,19 @@ typedef struct Tank
 	int life;
 	int x;
 	int y;
+	char nameP[M];
+	int ID;
 
 }Tank;
 
+bool true_id(int num);
 Tank ** initialize(int players,char Board[N][M]);
 void Play(char Board[N][M], Tank** Arr, int players);
 void PrintBoard(char Board[N][M]);
 void Move(Tank* tank, char Board[N][M]);
-void Shoot(Tank* tank, char Board[N][M]);
-void Directshot(Tank* tank, char Board[N][M]);
+void Shoot(Tank* tank, char Board[N][M], Tank** Arr);
+//void Directshot(Tank* tank, char Board[N][M]);
+void Directshot(Tank* tank, char map[N][M], Tank ** arr);
 void BuildMap(char map[N][M]);
 //int round(double num);
 int main()
@@ -38,10 +42,13 @@ int main()
 	char GameBoard[50][224];
 	BuildMap(GameBoard);
 	PrintBoard(GameBoard);
-	int players;
+	int players=5;
 	Tank ** Arr = NULL;
-	printf("Enter number of players\n");
-	scanf("%d", &players);
+	//while (players > 4 || players < 2)
+	{
+		printf("Enter number of players\n");
+		scanf("%d", &players);
+	}
 	Arr = initialize(players,GameBoard);
 	//for (int i = 0; i < players; i++)
 		//GameBoard[Arr[i]->x][Arr[i]->y] = Arr[i]->name;
@@ -172,6 +179,7 @@ void PrintBoard(char Board[N][M])
 }
 Tank ** initialize(int players,char Board[N][M])
 {
+	bool flag = FALSE;
 	char c = 'A';
 	srand(time(NULL));
 	Tank ** Arr = (Tank*)malloc((sizeof(Tank))*players);
@@ -182,7 +190,15 @@ Tank ** initialize(int players,char Board[N][M])
 		Arr[i]->live = TRUE;
 		Arr[i]->life = 2;
 		Arr[i]->name = c;
-
+		/*printf("Enter the name of player %d\n", i + 1);
+		scanf("%s", &Arr[i]->nameP);
+		while (flag == FALSE)
+		{
+			printf("Enter id of players %d\n(9 numbers if your id has last than 9 numbers put 0 in the end)\n", i + 1);
+			scanf("%d", &Arr[i]->ID);
+			flag = true_id(Arr[i]->ID);
+		}
+		flag = FALSE;*/
 		if (i == players-1)
 		{
 			switch (players)
@@ -251,7 +267,7 @@ void Play(char Board[N][M], Tank** Arr, int players)
 				scanf("%d", &choose);
 				if (choose)
 					Move(Arr[i], Board);
-				Shoot(Arr[i], Board);
+				Shoot(Arr[i], Board,Arr);
 			}
 	}
 }
@@ -296,7 +312,7 @@ void Move(Tank* tank, char Board[N][M])
 	Board[tank->x][tank->y] = tank->name;
 	PrintBoard(Board);
 }
-void Shoot(Tank* tank, char Board[N][M])
+void Shoot(Tank* tank, char Board[N][M], Tank** Arr)
 {
 	int choose;
 	printf("Enter what kind of shoot do you want:\n1.Direct shot.\n2.Steep path\n3.Guided Missile.\n4.Crazy sheep.\n");
@@ -304,12 +320,12 @@ void Shoot(Tank* tank, char Board[N][M])
 	switch (choose)
 	{
 	case 1:
-		Directshot(tank, Board);
+		Directshot(tank, Board,Arr);
 
 		break;
 	}
 }
-void Directshot(Tank* tank, char map[N][M])
+/*void Directshot(Tank* tank, char map[N][M])
 {
 	int power = 0, tempX = 0, index = 0;
 	double angel = 0, tempY = 0;
@@ -362,7 +378,7 @@ void Directshot(Tank* tank, char map[N][M])
 			tempY = tempY - 1;
 		else
 			tempY = tempY + 1;
-		*/
+		
 
 		if (map[tempX][(int)round(tempY)] == 'A' || map[tempX][(int)round(tempY)] == 'B' || map[tempX][(int)round(tempY)] == 'C' || map[tempX][(int)round(tempY)] == 'D')
 		{
@@ -384,7 +400,7 @@ void Directshot(Tank* tank, char map[N][M])
 	}
 	tempY = round(tempY); // final Y index.
 	PrintBoard(tempMap);
-}
+}*/
 /*
 int round(double num)
 {
@@ -398,3 +414,115 @@ int round(double num)
 	b = (int)num;
 	return (b);
 }*/
+void Directshot(Tank* tank, char map[N][M], Tank ** arr)
+{
+	int power = 0, tempX = 0, index = 0;
+	double angel = 0, tempY = 0;
+	char tempMap[N][M];
+	for (int i = 0; i<N; i++)
+		for (int j = 0; j<M; j++)
+			tempMap[i][j] = map[i][j];
+
+	printf("Enter Angel and Power:\n");
+	scanf("%lf%d", &angel, &power);
+	double radian = angel / 180 * M_PI; // convert to radian
+
+										//double radian = tan(angel);
+	printf("Rad:%lf", radian);
+	tempX = tank->x;
+	tempY = tank->y;
+	for (int i = 1; i <= power; i++)
+	{
+		if (angel < 90)
+		{
+			tempX = tempX - radian;
+			tempY = tempY + 1;
+		}
+		else if (angel > 90 && angel < 180)
+		{
+			tempX = tempX - radian;
+			tempY = tempY - 1;
+		}
+		else if (angel > 180 && angel < 270)
+		{
+			tempX = tempX + radian;
+			tempY = tempY - 1;
+		}
+		else if (angel > 270 && angel < 360)
+		{
+			tempX = tempX + radian;
+			tempY = tempY + 1;
+		}
+		else if (angel == 0 || angel == 360)
+			tempY = tempY + 1;
+		else if (angel == 90)
+			tempX = tempX - radian;
+		else if (angel == 180)
+			tempY = tempY - 1;
+		else if (angel == 270)
+			tempX = tempX + radian;
+		if (map[tempX][(int)round(tempY)] == 'A' || map[tempX][(int)round(tempY)] == 'B' || map[tempX][(int)round(tempY)] == 'C' || map[tempX][(int)round(tempY)] == 'D')
+		{
+			switch (map[tempX][(int)round(tempY)])
+			{
+			case 'A':
+				arr[0]->life--;
+				printf("HIT ! ! !\n");
+				if (arr[0]->life == 0)
+				{
+					arr[0]->live = FALSE;
+					printf("Player A is dead.\n");
+					map[arr[0]->x][arr[0]->y] = ' ';
+				}
+				break;
+			case 'B':
+				arr[1]->life--;
+				printf("HIT ! ! !\n");
+				if (arr[1]->life == 0)
+				{
+					arr[1]->live = FALSE;
+					printf("Player B is dead.\n");
+					map[arr[1]->x][arr[1]->y] = ' ';
+				}
+				break;
+			case 'C':
+				arr[2]->life--;
+				printf("HIT ! ! !\n");
+				if (arr[2]->life == 0)
+				{
+					arr[2]->live = FALSE;
+					printf("Player C is dead.\n");
+					map[arr[2]->x][arr[2]->y] = ' ';
+				}
+				break;
+			case 'D':
+				arr[3]->life--;
+				printf("HIT ! ! !\n");
+				if (arr[3]->life == 0)
+				{
+					arr[3]->live = FALSE;
+					printf("Player D is dead.\n");
+					map[arr[3]->x][arr[3]->y] = ' ';
+				}
+				break;
+			}
+		}
+		printf("tempX:%d\n", tempX);
+		tempMap[tempX][(int)round(tempY)] = '*'; //print 1 shot
+	}
+	tempY = round(tempY); // final Y index.
+	PrintBoard(tempMap);
+}
+bool true_id(int num)//return true if id has 9 nums 
+{
+	int count = 0;
+	while (num != 0)
+	{
+		num = num / 10;
+		count++;
+	}
+	if (count == 9)
+		return TRUE;
+	printf("Worng id try again\n");
+	return FALSE;
+}
