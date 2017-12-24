@@ -1,0 +1,530 @@
+#define _CRT_SECURE_NO_WARNINGS	
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <malloc.h>
+#include <math.h>
+#include <time.h>
+#define N 50
+#define M 224
+#define M_PI 3.14159265358979323846 
+typedef enum { FALSE, TRUE }bool;
+
+typedef struct Tank
+{
+	char name;
+	bool live;
+	int life;
+	int x;
+	int y;
+	char nameP[M];
+	int ID;
+
+}Tank;
+
+bool true_id(int num);
+Tank ** initialize(int players, char Board[N][M]);
+void Play(char Board[N][M], Tank** Arr, int players);
+void PrintBoard(char Board[N][M]);
+void Move(Tank* tank, char Board[N][M]);
+void Shoot(Tank* tank, char Board[N][M], Tank** Arr);
+//void Directshot(Tank* tank, char Board[N][M]);
+void Directshot(Tank* tank, char map[N][M], Tank ** arr);
+void BuildMap(char map[N][M]);
+void Steep_path(Tank* tank, char map[N][M], Tank **arr);
+//int round(double num);
+int main()
+{
+	/*char** GameBoard = (char**)malloc(N * sizeof(char*));
+	for (int i = 0; i < N; i++)
+	{
+	GameBoard[i] = (char*)malloc(M * sizeof(char));
+	}*/
+	char GameBoard[50][224];
+	BuildMap(GameBoard);
+	PrintBoard(GameBoard);
+	int players = 5;
+	Tank ** Arr = NULL;
+	//while (players > 4 || players < 2)
+	{
+		printf("Enter number of players\n");
+		scanf("%d", &players);
+	}
+	Arr = initialize(players, GameBoard);
+	//for (int i = 0; i < players; i++)
+	//GameBoard[Arr[i]->x][Arr[i]->y] = Arr[i]->name;
+	Play(GameBoard, Arr, players);
+	PrintBoard(GameBoard);
+	for (int i = 0; i < players; i++) // free memory
+		free(Arr[i]);
+	free(Arr);
+
+
+	return 0;
+}
+void BuildMap(char map[N][M])
+{
+	strcpy(map[0], "                                                                                                                                                                                                                               ");
+	strcpy(map[1], "                                                                                                                                                                                                                               ");
+	strcpy(map[2], "                                                                                                                                                                                                                               ");
+	strcpy(map[3], "                                                                                                                                                                                                                               ");
+	strcpy(map[4], "                                                                                                                                                                                                                               ");
+	strcpy(map[5], "                                                                                                                                                                                                                               ");
+	strcpy(map[6], "                                                                                                                                                                                                                               ");
+	strcpy(map[7], "                                                                                                                                                                                                                               ");
+	strcpy(map[8], "                                                                                                                                                                                                                               ");
+	strcpy(map[9], "                                                                                                                                                                                                                               ");
+	strcpy(map[10], "                                                                                                                                                                                                                               ");
+	strcpy(map[11], "                                                                                                                                                                                                                               ");
+	strcpy(map[12], "                                                                                                                                                                                                                               ");
+	strcpy(map[13], "                                                                                                                                                                                                                               ");
+	strcpy(map[14], "                                                                                                                                                                                                                               ");
+	strcpy(map[15], "                                                                                                                                                                                                                               ");
+	strcpy(map[16], "                                                                                                                                                                                                                               ");
+	strcpy(map[17], "                                                                                                                                                                                                                               ");
+	strcpy(map[18], "                                                                                                                                                                                                                               ");
+	strcpy(map[19], "                                       |                                                                                                                                                                                       ");
+	strcpy(map[20], "                                      |||                                                                                                                                                                                      ");
+	strcpy(map[21], "                                     |||||                                                                                                                                                                                     ");
+	strcpy(map[22], "                                    |||||||                                                                                                                                                                                    ");
+	strcpy(map[23], "                                   |||||||||                                                                                                                                                                                   ");
+	strcpy(map[24], "                                  |||||||||||                                                                                                                                                                                  ");
+	strcpy(map[25], "                                 |||||||||||||                                                                                                                                                                                 ");
+	strcpy(map[26], "                                |||||||||||||||                                                                                                                                                                                ");
+	strcpy(map[27], "                               |||||||||||||||||                                                                                                                                                                               ");
+	strcpy(map[28], "                              |||||||||||||||||||                                                                                                                                                                              ");
+	strcpy(map[29], "                             |||||||||||||||||||||                                                                                                                                                                             ");
+	strcpy(map[30], "                            |||||||||||||||||||||||                                                                                                                                                                            ");
+	strcpy(map[31], "                           |||||||||||||||||||||||||                                                                                                                                                                           ");
+	strcpy(map[32], "                          |||||||||||||||||||||||||||              |                                                                                                                                                           ");
+	strcpy(map[33], "                         |||||||||||||||||||||||||||||            |||                                                                                                                                                          ");
+	strcpy(map[34], "                        |||||||||||||||||||||||||||||||          |||||                                                                                                                                                         ");
+	strcpy(map[35], "                       |||||||||||||||||||||||||||||||||        |||||||               |                                                                                                                                        ");
+	strcpy(map[36], "                      |||||||||||||||||||||||||||||||||||      |||||||||             |||                                                                                                                                       ");
+	strcpy(map[37], "                     |||||||||||||||||||||||||||||||||||||    |||||||||||           |||||                                                                                                                                      ");
+	strcpy(map[38], "                    |||||||||||||||||||||||||||||||||||||||  |||||||||||||         |||||||                                                                                                                                     ");
+	strcpy(map[39], "            |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||       |||||||||                                                                                                                                    ");
+	strcpy(map[40], "          ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||     |||||||||||                                                                                                                                   ");
+	strcpy(map[41], "        |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||   |||||||||||||                                           |                                                            |                         ");
+	strcpy(map[42], "       ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| |||||||||||||||                                         |||                                                          |||                        ");
+	strcpy(map[43], "      |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||                                       |||||                                                        |||||                       ");
+	strcpy(map[44], "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||                                     |||||||                                                      |||||||                      ");
+	strcpy(map[45], "|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||                                   |||||||||                        |                           |||||||||                     ");
+	strcpy(map[46], "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||                                 |||||||||||                      |||                         |||||||||||                    ");
+	strcpy(map[47], "|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||             |                 |||||||||||||                    |||||                       |||||||||||||                   ");
+	strcpy(map[48], "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||           |||               |||||||||||||||                  |||||||                     |||||||||||||||                  ");
+	strcpy(map[49], "|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||");
+}
+void PrintBoard(char Board[N][M])
+{
+	for (int i = 0; i < 50; i++)
+	{
+		for (int j = 0; j < 224; j++)
+			printf("%c", Board[i][j]);
+	}
+}
+Tank ** initialize(int players, char Board[N][M])
+{
+	bool flag = FALSE;
+	char c = 'A';
+	srand(time(NULL));
+	Tank ** Arr = (Tank*)malloc((sizeof(Tank))*players);
+	for (int i = 0; i < players; i++, c++)
+	{
+
+		Arr[i] = (Tank*)malloc(sizeof(Tank));
+		Arr[i]->live = TRUE;
+		Arr[i]->life = 2;
+		Arr[i]->name = c;
+		/*printf("Enter the name of player %d\n", i + 1);
+		scanf("%s", &Arr[i]->nameP);
+		while (flag == FALSE)
+		{
+		printf("Enter id of players %d\n(9 numbers if your id has last than 9 numbers put 0 in the end)\n", i + 1);
+		scanf("%d", &Arr[i]->ID);
+		flag = true_id(Arr[i]->ID);
+		}
+		flag = FALSE;*/
+		if (i == players - 1)
+		{
+			switch (players)
+			{
+			case 1:
+				printf("You have some serious troubles.\n");
+				break;
+			case 2:
+				Arr[0]->y = rand() % 111;
+				Arr[0]->x = 49;
+				Arr[1]->y = 111 + (rand() % 111);
+				Arr[1]->x = 49;
+				break;
+			case 3:
+				Arr[0]->y = rand() % 73;
+				Arr[0]->x = 49;
+				Arr[1]->y = 73 + (rand() % 73);
+				Arr[1]->x = 49;
+				Arr[2]->y = 146 + (rand() % 73);
+				Arr[2]->x = 49;
+				break;
+			case 4:
+				Arr[0]->y = rand() % 55;
+				Arr[0]->x = 49;
+				Arr[1]->y = 55 + (rand() % 55);
+				Arr[1]->x = 49;
+				Arr[2]->y = 110 + (rand() % 55);
+				Arr[2]->x = 49;
+				Arr[3]->y = 165 + (rand() % 55);
+				Arr[3]->x = 49;
+				break;
+			}
+			for (int j = 0; j < players; j++)
+			{
+
+				if (Board[Arr[j]->x][Arr[j]->y] != ' ')
+					while (Board[Arr[j]->x - 1][Arr[j]->y] != ' ')
+						Arr[j]->x = Arr[j]->x - 1;
+				printf("bla\n");
+				Arr[j]->x = Arr[j]->x - 1;
+				Board[Arr[j]->x][Arr[j]->y] = Arr[j]->name;
+			}
+		}
+
+
+
+
+
+
+
+
+	}
+
+	return Arr;
+}
+void Play(char Board[N][M], Tank** Arr, int players)
+{
+	int count = players, choose;
+	while (count > 1)
+	{
+		for (int i = 0; i < players; i++)
+			if (Arr[i]->live == TRUE)
+			{
+				printf("Its player %d turn!\n", i + 1);
+				printf("would you like to move?1-Yes,0-No\t");
+				scanf("%d", &choose);
+				if (choose)
+					Move(Arr[i], Board);
+				Shoot(Arr[i], Board, Arr);
+			}
+	}
+}
+void Move(Tank* tank, char Board[N][M])
+{
+	PrintBoard(Board);
+	int choose, step;
+	Board[tank->x][tank->y] = ' ';
+	printf("What direction you want to move? Left-1, Right-2 \t");
+	scanf("%d", &choose);
+	printf("Enter how many steps do you want to move\t");
+	scanf("%d", &step);
+	while (step > 5 || step < 0)
+	{
+		printf("Maximum 5 moves,Enter how many steps do you want to move\t");
+		scanf("%d", &step);
+	}
+	if (choose == 1)//chose left
+		step = step*(-1);
+	if (tank->y + step >= M)//áãé÷ú âáåìåú îòøê
+		tank->y = M - 1;
+	else if (tank->y + step < 0)
+		tank->y = 0;
+	else
+		tank->y = tank->y + step;//äåñôú öòãéí ìèð÷
+	if (Board[tank->x][tank->y] == ' ')
+	{
+		while (Board[tank->x + 1][tank->y] == ' ')
+			tank->x = tank->x + 1;
+		if (Board[tank->x][tank->y] == '|')
+			tank->x = tank->x - 1;
+	}
+	else if (Board[tank->x][tank->y] != ' ')
+	{
+		while (Board[tank->x - 1][tank->y] != ' ')
+			tank->x = tank->x - 1;
+		if (Board[tank->x][tank->y] == '|')
+			tank->x = tank->x - 1;
+	}
+	if (tank->x == 49)
+		tank->x = tank->x - 1;
+	Board[tank->x][tank->y] = tank->name;
+	PrintBoard(Board);
+}
+void Shoot(Tank* tank, char Board[N][M], Tank** Arr)
+{
+	int choose;
+	printf("Enter what kind of shoot do you want:\n1.Direct shot.\n2.Steep path\n3.Guided Missile.\n4.Crazy sheep.\n");
+	scanf("%d", &choose);
+	switch (choose)
+	{
+	case 1:
+		Directshot(tank, Board, Arr);
+
+		break;
+	case 2:
+		Steep_path(tank, Board, Arr);
+		break;
+	}
+}
+
+void Directshot(Tank* tank, char map[N][M], Tank ** arr)
+{
+	int power = 0, tempX = 0, index = 0;
+	double angel = 0, tempY = 0;
+	char tempMap[N][M];
+	for (int i = 0; i<N; i++)
+		for (int j = 0; j<M; j++)
+			tempMap[i][j] = map[i][j];
+
+	printf("Enter Angel and Power:\n");
+	scanf("%lf%d", &angel, &power);
+	double radian = angel / 180 * M_PI; // convert to radian
+
+										//double radian = tan(angel);
+	printf("Rad:%lf", radian);
+	tempX = tank->x;
+	tempY = tank->y;
+	for (int i = 1; i <= power; i++)
+	{
+		if (angel < 90)
+		{
+			tempX = tempX - radian;
+			tempY = tempY + 1;
+		}
+		else if (angel > 90 && angel < 180)
+		{
+			tempX = tempX - radian;
+			tempY = tempY - 1;
+		}
+		else if (angel > 180 && angel < 270)
+		{
+			tempX = tempX + radian;
+			tempY = tempY - 1;
+		}
+		else if (angel > 270 && angel < 360)
+		{
+			tempX = tempX + radian;
+			tempY = tempY + 1;
+		}
+		else if (angel == 0 || angel == 360)
+			tempY = tempY + 1;
+		else if (angel == 90)
+			tempX = tempX - radian;
+		else if (angel == 180)
+			tempY = tempY - 1;
+		else if (angel == 270)
+			tempX = tempX + radian;
+		if (map[tempX][(int)round(tempY)] == 'A' || map[tempX][(int)round(tempY)] == 'B' || map[tempX][(int)round(tempY)] == 'C' || map[tempX][(int)round(tempY)] == 'D')
+		{
+			switch (map[tempX][(int)round(tempY)])
+			{
+			case 'A':
+				arr[0]->life--;
+				printf("HIT ! ! !\n");
+				if (arr[0]->life == 0)
+				{
+					arr[0]->live = FALSE;
+					printf("Player A is dead.\n");
+					map[arr[0]->x][arr[0]->y] = ' ';
+				}
+				break;
+			case 'B':
+				arr[1]->life--;
+				printf("HIT ! ! !\n");
+				if (arr[1]->life == 0)
+				{
+					arr[1]->live = FALSE;
+					printf("Player B is dead.\n");
+					map[arr[1]->x][arr[1]->y] = ' ';
+				}
+				break;
+			case 'C':
+				arr[2]->life--;
+				printf("HIT ! ! !\n");
+				if (arr[2]->life == 0)
+				{
+					arr[2]->live = FALSE;
+					printf("Player C is dead.\n");
+					map[arr[2]->x][arr[2]->y] = ' ';
+				}
+				break;
+			case 'D':
+				arr[3]->life--;
+				printf("HIT ! ! !\n");
+				if (arr[3]->life == 0)
+				{
+					arr[3]->live = FALSE;
+					printf("Player D is dead.\n");
+					map[arr[3]->x][arr[3]->y] = ' ';
+				}
+				break;
+			}
+		}
+		printf("tempX:%d\n", tempX);
+		tempMap[tempX][(int)round(tempY)] = '*'; //print 1 shot
+	}
+	tempY = round(tempY); // final Y index.
+	PrintBoard(tempMap);
+}
+
+void Steep_path(Tank* tank, char map[N][M],Tank **arr)
+{
+	int y = 1, x, k = 0, ykod, tankodx, tankody;
+	double  xkod, a, b, c, m;
+	char tempMap[N][M];
+	for (int i = 0; i<N; i++)
+		for (int j = 0; j<M; j++)
+			tempMap[i][j] = map[i][j];
+	printf("Enter coefficients of Quadratic equation aX^2 + bX +c (a,b,c): \n");
+	scanf("%lf%lf%lf", &a, &b, &c);
+	printf("%.01lfX^2 + %.01lfX + %lf.01\n", a, b, c);
+	xkod = (-b) / (2 * a);
+	ykod = (int)round(a*xkod*xkod + b*xkod + c);
+	xkod = (int)round(xkod);
+	tankodx = tank->x - ykod;
+	tankody = tank->y + xkod;
+	if (tankodx < 0 || tankody < 0 || tankodx >= N || tankody >= M)
+		printf("out of board\n");
+	else
+	{
+		m = (double)(tank->x - tankodx) / (double)(tank->y - tankody);
+		for (int i = 0; i < (tankody - tankodx); i++)
+		{
+			if (b < 0)
+				m *= (-1);
+			x = (int)round(tankodx - m*(i + 1));
+			y = tankody + i;
+			if (x >= 0 && x < N && y >= 0 && y < M && tempMap[x][y] != '|') {
+				if (b < 0) {
+					if (map[x][y] == 'A' || map[x][y] == 'B' || map[x][y] == 'C' || map[x][y] == 'D')
+					{
+						switch (map[x][y])
+						{
+						case 'A':
+							arr[0]->life--;
+							printf("HIT ! ! !\n");
+							if (arr[0]->life == 0)
+							{
+								arr[0]->live = FALSE;
+								printf("Player A is dead.\n");
+								map[arr[0]->x][arr[0]->y] = ' ';
+							}
+							break;
+						case 'B':
+							arr[1]->life--;
+							printf("HIT ! ! !\n");
+							if (arr[1]->life == 0)
+							{
+								arr[1]->live = FALSE;
+								printf("Player B is dead.\n");
+								map[arr[1]->x][arr[1]->y] = ' ';
+							}
+							break;
+						case 'C':
+							arr[2]->life--;
+							printf("HIT ! ! !\n");
+							if (arr[2]->life == 0)
+							{
+								arr[2]->live = FALSE;
+								printf("Player C is dead.\n");
+								map[arr[2]->x][arr[2]->y] = ' ';
+							}
+							break;
+						case 'D':
+							arr[3]->life--;
+							printf("HIT ! ! !\n");
+							if (arr[3]->life == 0)
+							{
+								arr[3]->live = FALSE;
+								printf("Player D is dead.\n");
+								map[arr[3]->x][arr[3]->y] = ' ';
+							}
+							break;
+						}
+					}
+
+				}
+				tempMap[x][y] = '*';
+			}
+			y = tankody - i;
+			if (x >= 0 && x < N && y >= 0 && y < M && tempMap[x][y] != '|') {
+				if (b > 0)
+				{
+					if (map[x][y] == 'A' || map[x][y] == 'B' || map[x][y] == 'C' || map[x][y] == 'D')
+					{
+						switch (map[x][y])
+						{
+						case 'A':
+							arr[0]->life--;
+							printf("HIT ! ! !\n");
+							if (arr[0]->life == 0)
+							{
+								arr[0]->live = FALSE;
+								printf("Player A is dead.\n");
+								map[arr[0]->x][arr[0]->y] = ' ';
+							}
+							break;
+						case 'B':
+							arr[1]->life--;
+							printf("HIT ! ! !\n");
+							if (arr[1]->life == 0)
+							{
+								arr[1]->live = FALSE;
+								printf("Player B is dead.\n");
+								map[arr[1]->x][arr[1]->y] = ' ';
+							}
+							break;
+						case 'C':
+							arr[2]->life--;
+							printf("HIT ! ! !\n");
+							if (arr[2]->life == 0)
+							{
+								arr[2]->live = FALSE;
+								printf("Player C is dead.\n");
+								map[arr[2]->x][arr[2]->y] = ' ';
+							}
+							break;
+						case 'D':
+							arr[3]->life--;
+							printf("HIT ! ! !\n");
+							if (arr[3]->life == 0)
+							{
+								arr[3]->live = FALSE;
+								printf("Player D is dead.\n");
+								map[arr[3]->x][arr[3]->y] = ' ';
+							}
+							break;
+						}
+					}
+				}
+				tempMap[x][y] = '*';
+			}
+
+		}
+
+	}
+	//if (k < 0 || k >= N || i < 0 || i >= M || tempMap[k][i] == '|')
+	PrintBoard(tempMap);
+}
+
+bool true_id(int num)//return true if id has 9 nums 
+{
+	int count = 0;
+	while (num != 0)
+	{
+		num = num / 10;
+		count++;
+	}
+	if (count == 9)
+		return TRUE;
+	printf("Worng id try again\n");
+	return FALSE;
+}
