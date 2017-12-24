@@ -1,0 +1,84 @@
+
+
+typedef struct Tank
+{
+	char name;
+	bool live;
+	int life;
+	int x;
+	int y;
+	char nameP[M];
+	int ID;
+
+}Tank;
+
+
+	
+
+
+
+bool true_id(int num);
+int main()
+{
+	
+	char GameBoard[50][224];
+	BuildMap(GameBoard);
+	PrintBoard(GameBoard);
+	int players;
+	Tank ** Arr = NULL;
+	printf("Enter number of players\n");
+	scanf("%d", &players);
+	Arr = initialize(players, GameBoard);
+	for (int i = 0; i < players; i++)
+		GameBoard[Arr[i]->x][Arr[i]->y] = Arr[i]->name;
+	Play(GameBoard, Arr, players);
+	PrintBoard(GameBoard);
+	for (int i = 0; i < players; i++) // free memory
+		free(Arr[i]);
+	free(Arr);
+
+
+	return 0;
+}
+
+Tank ** initialize(int players, char Board[N][M])
+{
+	char c = 'A';
+	bool flag = FALSE;
+	Tank ** Arr = (Tank*)malloc((sizeof(Tank))*players);
+	for (int i = 0; i < players; i++, c++)
+	{
+		int size;
+		Arr[i] = (Tank*)malloc(sizeof(Tank));
+		Arr[i]->live = TRUE;
+		Arr[i]->life = 2;
+		Arr[i]->name = c;
+		Arr[i]->x = i + 10;
+		Arr[i]->y = 48 + (i * 5);
+		printf("Enter name of players %d\n", i + 1);
+		scanf("%s", &Arr[i]->nameP);
+		while (flag==FALSE)
+		{
+			printf("Enter id of players %d (9 nambers if your id has lest 9 nums put 0 in the end\n", i + 1);
+			scanf("%d", &Arr[i]->ID);
+			flag = true_id(Arr[i]->ID);
+		}
+		flag = FALSE;
+	}
+
+	return Arr;
+}
+bool true_id(int num)//return true if id has 9 nums 
+{
+	int count = 0;
+	while (num!=0)
+	{
+		num = num / 10;
+		count++;
+	}
+	if (count == 9)
+		return TRUE;
+	printf("worng id try again");
+	return FALSE;
+}
+
