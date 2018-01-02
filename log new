@@ -1,0 +1,91 @@
+void Guided_Missile(Tank* tank, char map[N][M])
+{
+	int power = 0, dir = 0, index = 0, tempX = 0, x, y;
+	double angel = 0, base = 0, tempY = 0;
+	char tempMap[N][M];
+	for (int i = 0; i<N; i++)
+		for (int j = 0; j<M; j++)
+			tempMap[i][j] = map[i][j];
+
+	printf("Enter base and Power:\n");
+	scanf("%lf%d", &base, &power);
+	//printf("Which Direction?\t left 0, right 1\t");
+	//scanf("%d", &dir);
+	//if(dir==0)
+	x = tank->x;
+	y = tank->y;
+	tempX = tank->x;
+	tempY = tank->y;
+	int i = 0, j = 0;
+	//tempMap[tempX-1][y] = '-';
+	//tempMap[tempX - 2][y] = '-';
+
+	while (i <= power)
+	{
+
+		printf("\n(x=%d,y=%lf)\n", tempX, tempY);
+		if (map[(int)tempX - 1][(int)tempY] == '|'|| map[(int)tempX][(int)tempY+1] == '|')
+			break;
+		if (tempY == 0)
+			tempY = Log_By_Base(tank->y, base);
+		tempY = i*(Log_By_Base(tempY, base));
+		tempY = round(tempY);
+		if (i==0)
+			tempX -= 1;
+		if(i!=0)
+			if (i <= power/i)
+				tempX -= 1;
+
+		if (map[tempX][(int)tempY] == 'A' || map[tempX][(int)tempY] == 'B' || map[tempX][(int)tempY] == 'C' || map[tempX][(int)tempY] == 'D')
+		{
+			switch (map[tempX][(int)tempY])
+			{
+			case 'A':
+				tank->life--;
+				if (tank->life == 0)
+				{
+					tank->live = FALSE;
+					map[tank->x][tank->y] = ' ';
+				}
+				break;
+			case 'B':
+				tank->life--;
+				if (tank->life == 0)
+				{
+					tank->live = FALSE;
+					map[tank->x][tank->y] = ' ';
+				}
+				break;
+			case 'C':
+				tank->life--;
+				if (tank->life == 0)
+				{
+					tank->live = FALSE;
+					map[tank->x][tank->y] = ' ';
+				}
+				break;
+			case 'D':
+				tank->life--;
+				if (tank->life == 0)
+				{
+					tank->live = FALSE;
+					map[tank->x][tank->y] = ' ';
+				}
+				break;
+			}
+		}
+		if (i==0)
+			tempMap[tempX - i][(int)tempY + y ] = '*';
+		else
+			tempMap[tempX - i][(int)tempY + y-2] = '*'; //print 1 shot     int)tempY+y
+		//PrintBoard(tempMap);											  //tempY = round(tempY); // final Y index.
+		
+		printf("\n(x=%d,y=%lf)\n", tempX - i, tempY);
+		printf("\ntank y %d\n", tank->y);
+		i++;
+	}
+	//tempMap[tempX - i][(int)tempY + y + i] = '*';
+	//	printf("tempX:%d\n", tempX);
+	//	tempMap[tempX][(int)round(tempY)] = '*'; //print 1 shot
+	PrintBoard(tempMap);
+}
