@@ -1,0 +1,37 @@
+double Log_By_Base(double value, double wanted_base)
+{
+	double newVal = 0;
+	newVal = log(value) / log(wanted_base);
+	return newVal;
+}
+void Guided_Missile(Tank* tank, char map[N][M])
+{
+	double x=0, y, b,res=0;
+	int a;
+	char tempMap[N][M];
+	for (int i = 0;i < N;i++)
+		for (int j = 0;j < M;j++)
+			tempMap[i][j] = map[i][j];
+	printf("Enter b and a:\n");
+	scanf("%lf%d", &b, &a);
+	y = tank->y;
+	x = tank->x;
+	printf("tank x =%d\ntank y= %d\n", tank->x, tank->y);
+	int i = 0;
+	for (int k = 1;k < a+2;k++)
+	{
+		tempMap[(int)x - k][(int)y] = '*';
+	}
+	res = Log_By_Base(a, b);
+	x -= a+2;
+	int index = -1+res;
+	while (y>0 && y < M-1 && tempMap[(int)x][(int)y]!='|'&& x>0&& x<N-1)
+	{
+		y = y + index;
+		x--;
+		tempMap[(int)x][(int)y] = '*';
+		index++;
+
+	}
+	PrintBoard(tempMap);
+}
