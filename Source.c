@@ -42,7 +42,7 @@ void Guided_Missile(Tank* tank, char map[N][M]);
 double Log_By_Base(double value, double wanted_base);
 bool Test_ID(char* id);
 void Steep_path(Tank* tank, char map[N][M], Tank **arr);
-
+void CrazySheep(Tank* tank, char map[N][M], Tank ** arr);
 
 int main()
 {
@@ -65,7 +65,8 @@ int main()
 	for (int i = 0; i < players; i++) // free memory
 		free(Arr[i]);
 	free(Arr);
-
+	for (int i = 0; i < 10; i++)
+		printf("\ndid you change the STEPS?!??!?\nfrom 50 to 5\nfunction move....\n");
 
 	return 0;
 }
@@ -219,7 +220,7 @@ void Move(Tank* tank, char Board[N][M])
 	scanf("%d", &choose);
 	printf("Enter how many steps do you want to move\t");
 	scanf("%d", &step);
-	while (step > 5 || step < 0)
+	while (step > 50 || step < 0)
 	{
 		printf("Maximum 5 moves,Enter how many steps do you want to move\t");
 		scanf("%d", &step);
@@ -268,7 +269,7 @@ void Shoot(Tank* tank, char Board[N][M], Tank** Arr)
 		Guided_Missile(tank, Board);
 		break;
 	case 4:
-		printf("Coming soon.\n");
+		CrazySheep(tank, Board, Arr);
 		break;
 	}
 }
@@ -628,5 +629,241 @@ void Steep_path(Tank* tank, char map[N][M], Tank **arr)
 
 	}
 	//if (k < 0 || k >= N || i < 0 || i >= M || tempMap[k][i] == '|')
+	PrintBoard(tempMap);
+}
+
+
+void CrazySheep(Tank* tank, char map[N][M], Tank ** arr)
+{
+	int power = 0,index = 0,a,b,My_NewPI=21,y = 0,max,direct;
+	double angel = 0, x = 0;
+	char tempMap[N][M];
+	for (int i = 0; i<N; i++)
+		for (int j = 0; j<M; j++)
+			tempMap[i][j] = map[i][j];
+	printf("Y = a * sin (b*x)\n\n");
+	printf("which direction do you want to shot?1-Left,2-Right  ");
+	scanf("%d", &direct);
+	if (direct == 1)
+		direct = -1;
+	else
+		direct = 1;
+	printf("please enter a,b  \n");
+	scanf("%d%d", &a, &b);
+	/*double radian = angel / 180 * M_PI; // convert to radian
+
+										//double radian = tan(angel);
+	tempX = tank->x;
+	tempY = tank->y;
+	for (int i = 1; i <= power; i++)
+	{
+		if (angel < 90)
+		{
+			tempX = tempX - radian;
+			tempY = tempY + 1;
+		}
+		else if (angel > 90 && angel < 180)
+		{
+			tempX = tempX - radian;
+			tempY = tempY - 1;
+		}
+		else if (angel > 180 && angel < 270)
+		{
+			tempX = tempX + radian;
+			tempY = tempY - 1;
+		}
+		else if (angel > 270 && angel < 360)
+		{
+			tempX = tempX + radian;
+			tempY = tempY + 1;
+		}
+		else if (angel == 0 || angel == 360)
+			tempY = tempY + 1;
+		else if (angel == 90)
+			tempX = tempX - radian;
+		else if (angel == 180)
+			tempY = tempY - 1;
+		else if (angel == 270)
+			tempX = tempX + radian;*/
+	x = tank->x;
+	y = tank->y;
+	My_NewPI = My_NewPI / b; // sin cycle
+	if (My_NewPI % 2 == 0)
+		My_NewPI++;
+	max = (My_NewPI / 2) + 1;
+	angel = a / max;
+	while (tempMap[(int)x][y] == ' ' || tempMap[(int)x][y] == tank->name || tempMap[(int)x][y] == '*' && (x > 0 && x < N -1&& y>0 && y < M-1))
+	{
+		
+		//tempMap[(int)x + a][y + max] = '*';
+		
+		for (int i = 0; i < max; i++)
+		{
+			x = round(x - angel);
+			y = y + direct;
+			
+			if (map[(int)x][y] == 'A' || map[(int)x][y] == 'B' || map[(int)x][y] == 'C' || map[(int)x][y] == 'D')
+			{
+				switch (map[(int)x][y])
+				{
+				case 'A':
+					arr[0]->life--;
+					printf("HIT ! ! !\n");
+					if (arr[0]->life == 0)
+					{
+						arr[0]->live = FALSE;
+						globalcount--;
+						printf("Player %s is dead.\n", arr[0]->nameP);
+						map[arr[0]->x][arr[0]->y] = ' ';
+					}
+					break;
+				case 'B':
+					arr[1]->life--;
+					printf("HIT ! ! !\n");
+					if (arr[1]->life == 0)
+					{
+						arr[1]->live = FALSE;
+						globalcount--;
+						printf("Player %s is dead.\n", arr[1]->nameP);
+						map[arr[1]->x][arr[1]->y] = ' ';
+					}
+					break;
+				case 'C':
+					arr[2]->life--;
+					printf("HIT ! ! !\n");
+					if (arr[2]->life == 0)
+					{
+						arr[2]->live = FALSE;
+						globalcount--;
+						printf("Player %s is dead.\n", arr[2]->nameP);
+						map[arr[2]->x][arr[2]->y] = ' ';
+					}
+					break;
+				case 'D':
+					arr[3]->life--;
+					printf("HIT ! ! !\n");
+					if (arr[3]->life == 0)
+					{
+						arr[3]->live = FALSE;
+						globalcount--;
+						printf("Player %s is dead.\n", arr[3]->nameP);
+						map[arr[3]->x][arr[3]->y] = ' ';
+					}
+					break;
+				}
+			}
+			else if (map[(int)x][y] == '|')
+			{
+				PrintBoard(tempMap);
+				return;
+			}
+			else if (x > N - 1 || x < 0 || y <0 || y >M - 1)
+			{
+				PrintBoard(tempMap);
+				return;
+			}
+			else if (map[(int)x][y] == 'A' || map[(int)x][y] == 'B' || map[(int)x][y] == 'C' || map[(int)x][y] == 'D')
+			{
+				tempMap[(int)x][y] = 'X';
+				PrintBoard(tempMap);
+				return;
+			}
+			else
+			tempMap[(int)x][y] = '*';
+		}
+		for (int i = 0; i < max; i++)
+		{
+			y = y + direct;
+			x = round(x + angel);
+			
+			if (map[(int)x][y] == 'A' || map[(int)x][y] == 'B' || map[(int)x][y] == 'C' || map[(int)x][y] == 'D')
+			{
+				switch (map[(int)x][y])
+				{
+				case 'A':
+					arr[0]->life--;
+					printf("HIT ! ! !\n");
+					if (arr[0]->life == 0)
+					{
+						arr[0]->live = FALSE;
+						globalcount--;
+						printf("Player %s is dead.\n", arr[0]->nameP);
+						map[arr[0]->x][arr[0]->y] = ' ';
+					}
+					break;
+				case 'B':
+					arr[1]->life--;
+					printf("HIT ! ! !\n");
+					if (arr[1]->life == 0)
+					{
+						arr[1]->live = FALSE;
+						globalcount--;
+						printf("Player %s is dead.\n", arr[1]->nameP);
+						map[arr[1]->x][arr[1]->y] = ' ';
+					}
+					break;
+				case 'C':
+					arr[2]->life--;
+					printf("HIT ! ! !\n");
+					if (arr[2]->life == 0)
+					{
+						arr[2]->live = FALSE;
+						globalcount--;
+						printf("Player %s is dead.\n", arr[2]->nameP);
+						map[arr[2]->x][arr[2]->y] = ' ';
+					}
+					break;
+				case 'D':
+					arr[3]->life--;
+					printf("HIT ! ! !\n");
+					if (arr[3]->life == 0)
+					{
+						arr[3]->live = FALSE;
+						globalcount--;
+						printf("Player %s is dead.\n", arr[3]->nameP);
+						map[arr[3]->x][arr[3]->y] = ' ';
+					}
+					break;
+				}
+			}
+			if (map[(int)x][y] == '|')
+			{
+				PrintBoard(tempMap);
+				return;
+			}
+			else if (x > N - 1 || x < 0 || y <0 || y >M - 1)
+			{
+				PrintBoard(tempMap);
+				return;
+			}
+			else if (map[(int)x][y] == 'A' || map[(int)x][y] == 'B' || map[(int)x][y] == 'C' || map[(int)x][y] == 'D')
+			{
+				tempMap[(int)x][y] = 'X';
+
+				PrintBoard(tempMap);
+				return;
+
+			}
+			else
+			tempMap[(int)x][y] = '*';
+		}
+		angel = angel*(-1);
+	}
+
+	/*
+		//printf("\n");
+		if (tempMap[tempX][(int)round(tempY)] == '|')
+			i = power;
+		else if (tempX > N - 1 || tempX < 0 || tempY <0 || tempY >M - 1)
+			i = power;
+		else if (tempMap[tempX][(int)round(tempY)] == 'A' || tempMap[tempX][(int)round(tempY)] == 'B' || tempMap[tempX][(int)round(tempY)] == 'C' || tempMap[tempX][(int)round(tempY)] == 'D')
+		{
+			tempMap[tempX][(int)round(tempY)] = 'X';
+			i = power;
+		}
+		else
+			tempMap[tempX][(int)round(tempY)] = '*'; //print 1 shot 
+	}
+	//tempY = round(tempY); // final Y index.*/
 	PrintBoard(tempMap);
 }
