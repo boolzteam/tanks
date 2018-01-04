@@ -1,0 +1,82 @@
+
+Tank ** initialize(int players, char Board[N][M])
+{
+	int j = 0;//counter to id
+	int counter_ID = 0;
+	bool flag_ID=FALSE;
+	bool flag = FALSE;
+	char c = 'A';
+	srand(time(NULL));
+	Tank ** Arr = (Tank**)malloc((sizeof(Tank))*players);
+	for (int i = 0; i < players; i++, c++)
+	{
+
+		Arr[i] = (Tank*)malloc(sizeof(Tank));
+		Arr[i]->live = TRUE;
+		Arr[i]->life = 2;
+		Arr[i]->name = c;
+		printf("Enter the name of player %d\n", i + 1);
+		scanf("%s", &Arr[i]->nameP);
+		while (!flag_ID)
+		{
+			j = 0;//counter to id
+			counter_ID = 0;
+			printf("Enter the ID of player %d (9 numbers)\n", i + 1);
+			scanf("%s", &Arr[i]->ID);
+			while (((Arr[i]->ID)[j])!='\0')
+			{
+				if (((Arr[i]->ID)[j]) < '10' && ((Arr[i]->ID)[j]) >=  '0')
+					counter_ID++;
+				j++;
+
+			}
+			if (counter_ID == 9)
+				flag_ID = TRUE;
+			else
+				printf("worng ID try again if your id less then 9 numbers put 0 in begain");
+		}
+		flag_ID = FALSE;
+		if (i == players - 1)
+		{
+			switch (players)
+			{
+			case 1:
+				printf("You have some serious troubles.\n");
+				break;
+			case 2:
+				Arr[0]->y = rand() % 111;
+				Arr[0]->x = 49;
+				Arr[1]->y = 111 + (rand() % 111);
+				Arr[1]->x = 49;
+				break;
+			case 3:
+				Arr[0]->y = rand() % 73;
+				Arr[0]->x = 49;
+				Arr[1]->y = 73 + (rand() % 73);
+				Arr[1]->x = 49;
+				Arr[2]->y = 146 + (rand() % 73);
+				Arr[2]->x = 49;
+				break;
+			case 4:
+				Arr[0]->y = rand() % 55;
+				Arr[0]->x = 49;
+				Arr[1]->y = 55 + (rand() % 55);
+				Arr[1]->x = 49;
+				Arr[2]->y = 110 + (rand() % 55);
+				Arr[2]->x = 49;
+				Arr[3]->y = 165 + (rand() % 55);
+				Arr[3]->x = 49;
+				break;
+			}
+			for (int j = 0; j < players; j++)
+			{
+				if (Board[Arr[j]->x][Arr[j]->y] != ' ')
+					while (Board[Arr[j]->x - 1][Arr[j]->y] != ' ')
+						Arr[j]->x = Arr[j]->x - 1;
+				Arr[j]->x = Arr[j]->x - 1;
+				Board[Arr[j]->x][Arr[j]->y] = Arr[j]->name;
+			}
+		}
+	}
+	return Arr;
+}
