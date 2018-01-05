@@ -19,7 +19,7 @@ typedef struct
 	int x;
 	int y;
 	char nameP[M];
-	char* ID;
+	char* ID[M];
 
 }Tank;
 int globalcount = 0;
@@ -133,6 +133,9 @@ void PrintBoard(char Board[N][M])
 }
 Tank ** initialize(int players, char Board[N][M])
 {
+	int j = 0;//counter to id
+	int counter_ID = 0;
+	bool flag_ID=FALSE;
 	bool flag = FALSE;
 	char c = 'A';
 	srand(time(NULL));
@@ -146,6 +149,25 @@ Tank ** initialize(int players, char Board[N][M])
 		Arr[i]->name = c;
 		printf("Enter the name of player %d\n", i + 1);
 		scanf("%s", &Arr[i]->nameP);
+		while (!flag_ID)
+		{
+			j = 0;//counter to id
+			counter_ID = 0;
+			printf("Enter the ID of player %d (9 numbers)\n", i + 1);
+			scanf("%s", &Arr[i]->ID);
+			while (((Arr[i]->ID)[j])!='\0')
+			{
+				if (((Arr[i]->ID)[j]) < '10' && ((Arr[i]->ID)[j]) >=  '0')
+					counter_ID++;
+				j++;
+
+			}
+			if (counter_ID == 9)
+				flag_ID = TRUE;
+			else
+				printf("worng ID try again if your id less then 9 numbers put 0 in begain");
+		}
+		flag_ID = FALSE;
 		if (i == players - 1)
 		{
 			switch (players)
@@ -227,12 +249,12 @@ void Move(Tank* tank, char Board[N][M])
 	}
 	if (choose == 1)//chose left
 		step = step*(-1);
-	if (tank->y + step >= M)//áãé÷ú âáåìåú îòøê
+	if (tank->y + step >= M)//Ã¡Ã£Ã©Ã·Ãº Ã¢Ã¡Ã¥Ã¬Ã¥Ãº Ã®Ã²Ã¸Ãª
 		tank->y = M - 1;
 	else if (tank->y + step < 0)
 		tank->y = 0;
 	else
-		tank->y = tank->y + step;//äåñôú öòãéí ìèğ÷
+		tank->y = tank->y + step;//Ã¤Ã¥Ã±Ã´Ãº Ã¶Ã²Ã£Ã©Ã­ Ã¬Ã¨Ã°Ã·
 	if (Board[tank->x][tank->y] == ' ')
 	{
 		while (Board[tank->x + 1][tank->y] == ' ')
