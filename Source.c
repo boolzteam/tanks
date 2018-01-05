@@ -19,7 +19,7 @@ typedef struct
 	int x;
 	int y;
 	char nameP[M];
-	char* ID[M];
+	char ID[M];
 
 }Tank;
 int globalcount = 0;
