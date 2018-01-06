@@ -9,6 +9,8 @@
 #define N 50
 #define M 224
 #define M_PI 3.14159265358979323846 
+#define column 4
+#define row 2
 typedef enum { FALSE, TRUE }bool;
 
 typedef struct
@@ -20,9 +22,12 @@ typedef struct
 	int y;
 	char nameP[M];
 	char ID[M];
+	int shotTable[row][column];
 
 }Tank;
 int globalcount = 0;
+int prev_tank[5] = {0,0,0,0,0};  //0-tank index, 1-hit or not, 2-hitted tank, 3-x, 4-y
+char password[5] = "1234";
 /*
 bool Test_ID(char* id);
 bool Test_Move_Direction(int num);
@@ -43,17 +48,27 @@ double Log_By_Base(double value, double wanted_base);
 bool Test_ID(char* id);
 void Steep_path(Tank* tank, char map[N][M], Tank **arr);
 void CrazySheep(Tank* tank, char map[N][M], Tank ** arr);
-int hit(Tank* tank, char map[N][M], Tank ** arr, int tempX, int tempY, int i, int power, char tempMap[N][M]);
 bool glob_hit(Tank* tank, char map[N][M], Tank ** arr, int x, int y);
 double make_a_positive(double);
+void extractFile(Tank**Arr, char* AdminID,int players);
+
 int main()
 {
 
 	//bool *test[7];
-	char GameBoard[50][224];
+	int admin;
+	char GameBoard[50][224],AdminID[M];
 	BuildMap(GameBoard);
 	PrintBoard(GameBoard);
-
+	printf("Admin accsess?1-Yes,0-No\n");
+	scanf("%d", &admin);
+	if (admin == 1)
+	{
+		printf("Enter the admin ID \n");
+		do {
+			scanf("%s", &AdminID);
+		} while (Test_ID(AdminID) == FALSE);
+	}
 	int players = 5;
 	Tank ** Arr = NULL;
 	while (players > 4 || players < 2)
@@ -64,13 +79,56 @@ int main()
 	Arr = initialize(players, GameBoard);
 	PrintBoard(GameBoard);
 	Play(GameBoard, Arr, players);
+	if (admin == 1)
+		extractFile(Arr, AdminID, players);
 	for (int i = 0; i < players; i++) // free memory
 		free(Arr[i]);
 	free(Arr);
 	for (int i = 0; i < 10; i++)
 		printf("\ndid you change the STEPS?!??!?\nfrom 50 to 5\nfunction move....\n");
-
 	return 0;
+}
+void extractFile(Tank**Arr, char* AdminID, int players)
+{
+	char temp[M];
+	int tries = 4;
+	do {
+		tries--;
+		printf("Please enter the admin ID, you have %d tries\n",tries);
+		scanf("%s", &temp);
+	} while (strcmp(AdminID, temp) && tries);
+	if ((strcmp(AdminID, temp))) {
+		printf("Wrong admin ID, failed to open file\n");
+		return;
+	}
+	FILE *fout = NULL;
+	if ((fout=fopen("Shoot_Data_Base.txt", "w")) == NULL)
+	{
+		printf("Error, failed opening file\n");
+		exit(1);
+	}
+	fprintf(fout, "Shoot Table\n\n");
+	for (int i = 0; i < players; i++)
+	{
+		if(Arr[i]->shotTable[0][0] != 0)
+			fprintf(fout, "Name: %s\nID:%s\nDirect Shoot: %d\tHits:%d\tMiss:%d,(%.02lf%%)\n", Arr[i]->nameP, Arr[i]->ID, Arr[i]->shotTable[0][0], Arr[i]->shotTable[1][0], Arr[i]->shotTable[0][0] - Arr[i]->shotTable[1][0], ((double)(Arr[i]->shotTable[1][0]) / (double)(Arr[i]->shotTable[0][0])) * 100);
+		else
+			fprintf(fout, "Name: %s\nID:%s\nDirect Shoot: %d\tHits:%d\tMiss:%d,(%.02lf%%)\n", Arr[i]->nameP, Arr[i]->ID, Arr[i]->shotTable[0][0], Arr[i]->shotTable[1][0], Arr[i]->shotTable[0][0] - Arr[i]->shotTable[1][0],0);
+		if (Arr[i]->shotTable[0][1] != 0)
+			fprintf(fout, "Steep Path: %d\tHits:%d\tMiss:%d,(%.02lf%%)\n", Arr[i]->shotTable[0][1], Arr[i]->shotTable[1][1], Arr[i]->shotTable[0][1] - Arr[i]->shotTable[1][1], ((double)(Arr[i]->shotTable[1][1]) / (double)(Arr[i]->shotTable[0][1])) * 100);
+		else
+			fprintf(fout, "Steep Path: %d\tHits:%d\tMiss:%d,(%.02lf%%)\n", Arr[i]->shotTable[0][1], Arr[i]->shotTable[1][1], Arr[i]->shotTable[0][1] - Arr[i]->shotTable[1][1],0);
+		if (Arr[i]->shotTable[0][2] != 0)
+			fprintf(fout, "Guided Missle: %d\tHits:%d\tMiss:%d,(%.02lf%%)\n", Arr[i]->shotTable[0][2], Arr[i]->shotTable[1][2], Arr[i]->shotTable[0][2] - Arr[i]->shotTable[1][2], ((double)(Arr[i]->shotTable[1][2]) / (double)(Arr[i]->shotTable[0][2])) * 100);
+		else
+			fprintf(fout, "Guided Missle: %d\tHits:%d\tMiss:%d,(%.02lf%%)\n", Arr[i]->shotTable[0][2], Arr[i]->shotTable[1][2], Arr[i]->shotTable[0][2] - Arr[i]->shotTable[1][2], 0);
+		if (Arr[i]->shotTable[0][3] != 0)
+			fprintf(fout, "Crazy Sheep: %d\tHits:%d\tMiss:%d,(%.02lf%%)\n\n", Arr[i]->shotTable[0][3], Arr[i]->shotTable[1][3], Arr[i]->shotTable[0][3] - Arr[i]->shotTable[1][3], ((double)(Arr[i]->shotTable[1][3]) / (double)(Arr[i]->shotTable[0][3])) * 100);
+		else
+			fprintf(fout, "Crazy Sheep: %d\tHits:%d\tMiss:%d,(%.02lf%%)\n\n", Arr[i]->shotTable[0][3], Arr[i]->shotTable[1][3], Arr[i]->shotTable[0][3] - Arr[i]->shotTable[1][3], 0);
+	}
+	printf("Dear Admin,The file is ready.\n");
+	fclose(fout);
 }
 void BuildMap(char map[N][M])
 {
@@ -154,6 +212,9 @@ Tank ** initialize(int players, char Board[N][M])
 		do {
 			scanf("%s", &Arr[i]->ID);
 		} while (Test_ID(Arr[i]->ID) == FALSE);
+		for (int k = 0; k < 2; k++)
+			for (int l = 0; l < 4; l++)
+				Arr[i]->shotTable[k][l] = 0;
 		if (i == players - 1)
 		{
 			switch (players)
@@ -194,25 +255,72 @@ Tank ** initialize(int players, char Board[N][M])
 				Arr[j]->x = Arr[j]->x - 1;
 				Board[Arr[j]->x][Arr[j]->y] = Arr[j]->name;
 			}
+
 		}
 	}
 	return Arr;
 }
 void Play(char Board[N][M], Tank** Arr, int players)
 {
+	char guide[M];
 	globalcount = players;
-	int choose;
+	int choose,tries=4,guide_flag=0;
+	printf("Guide access? 1-Yes  0-No\n");
+	scanf("%d", &choose);
+	if (choose)
+	{
+		do {
+			tries--;
+			printf("Please enter the guide password, you have %d tries\n", tries);
+			scanf("%s", &guide);
+		} while (strcmp(password, guide) && tries);
+		if ((strcmp(password, guide)))
+			printf("Wrong password, guide has no access\n");
+		else
+		{
+			printf("Guide has an access\n");
+			guide_flag = 1;
+		}
+	}
 	while (globalcount > 1)
 	{
 		for (int i = 0; i < players; i++)
 			if (Arr[i]->live == TRUE)
 			{
+				prev_tank[3] = Arr[i]->x;
+				prev_tank[4] = Arr[i]->y;
+				prev_tank[0] = i;
 				printf("Its %s turn!\n", Arr[i]->nameP);
 				printf("would you like to move?1-Yes,0-No\t");
 				scanf("%d", &choose);
 				if (choose)
 					Move(Arr[i], Board);
 				Shoot(Arr[i], Board, Arr);
+				if (guide_flag)
+				{
+					printf("Guide access, Do you want to try this turn again? 1-Yes  0-No\n");
+					scanf("%d", &choose);
+					if (choose)
+					{
+
+						Board[Arr[i]->x][Arr[i]->y] = ' ';
+						Arr[i]->x = prev_tank[3];
+						Arr[i]->y = prev_tank[4];
+						Board[Arr[i]->x][Arr[i]->y] = Arr[i]->name;
+						if (prev_tank[1])
+						{
+							Arr[prev_tank[2]]->life++;
+							if (Arr[prev_tank[2]]->live == FALSE)
+							{
+								Arr[prev_tank[2]]->live == TRUE;
+								Board[Arr[prev_tank[2]]->x][Arr[prev_tank[2]]->y] = Arr[prev_tank[2]]->name;
+								globalcount++;
+							}
+						}
+						i = (i - 1) % players;
+						PrintBoard(Board);
+					}
+				}
 			}
 	}
 	for (int i = 0; i < players; i++)
@@ -269,171 +377,121 @@ void Shoot(Tank* tank, char Board[N][M], Tank** Arr)
 	{
 	case 1:
 		Directshot(tank, Board, Arr);
+		tank->shotTable[0][0]++;
 		break;
 	case 2:
 		Steep_path(tank, Board, Arr);
+		tank->shotTable[0][1]++;
 		break;
 	case 3:
 		Guided_Missile(tank, Board);
+		tank->shotTable[0][2]++;
 		break;
 	case 4:
 		CrazySheep(tank, Board, Arr);
+		tank->shotTable[0][3]++;
 		break;
 	}
 }
+
 void Directshot(Tank* tank, char map[N][M], Tank ** arr)
 {
-	int power = 0, tempX = 0, index = 0, x;
-	double angel = 0, tempY = 0;
+	int power = 0, index = 0,x;
+	double angel = 0, tempY = 0,tempX = 0,radian ;
 	char tempMap[N][M];
 	for (int i = 0; i<N; i++)
 		for (int j = 0; j<M; j++)
 			tempMap[i][j] = map[i][j];
 
 	printf("Enter Angel and Power:\n");
-	double radian;
 	scanf("%lf%d", &angel, &power);
 	if (angel < 90)
 		radian = angel / 180 * M_PI; // convert to 
 	else
 	{
-		printf("\nrad:%d\n", (int)angel % 90);
 		radian = (((int)angel % 90)* M_PI / 180);
 	}
-	printf("\n %lf \n", radian);
-	//double radian = tan(angel);
 	tempX = tank->x;
+	x = tank->x;
 	tempY = tank->y;
-	radian++;
 	for (int i = 1; i <= power; i++)
 	{
 		if (angel < 90)
 		{
 			tempX = tempX - radian;
-			x = tempX;
-			tempY = tempY + 2;
+			x = (int)round(tempX);
+			tempY = tempY + 1;
 		}
 		else if (angel > 90 && angel < 180)
 		{
 			tempX = tempX - radian;
-			x = tempX;
-			tempY = tempY - 2;
+			x = (int)round(tempX);
+			tempY = tempY - 1;
 		}
 		else if (angel > 180 && angel < 270)
 		{
 			tempX = tempX + radian;
-			x = (int)tempX;
-			tempY = tempY - 2;
+			x = (int)round(tempX);
+			tempY = tempY - 1;
 		}
 		else if (angel > 270 && angel < 360)
 		{
 			tempX = tempX + radian;
-			x = tempX;
-			tempY = tempY + 2;
+			x = (int)round(tempX);
+			tempY = tempY + 1;
 		}
 		else if (angel == 0 || angel == 360)
-			tempY = tempY + 2;
+			tempY = tempY + 1;
 		else if (angel == 90)
 		{
-			tempX = tempX - radian;
-			x = tempX;
-
+			tempX = tempX - 1;
+			x = (int)round(tempX);
 		}
 		else if (angel == 180)
-			tempY = tempY - 2;
+			tempY = tempY - 1;
 		else if (angel == 270)
 		{
-			tempX = tempX + radian;
-			x = tempX;
+			tempX = tempX + 1;
+			x = (int)round(tempX);
 		}
-		i = hit(tank, map, arr, x, (int)tempY, i, power, tempMap);
+
+		if (tempMap[x][(int)tempY] == '|' || x < 0 || x >= N || (int)tempY < 0 || (int)tempY >= M)
+		{
+			printf("break-point 1\n");
+			break;
+		}
+		printf("x= %d\n tempx= %lf\n,tempY-%lf\n", x, tempX, tempY);
+		if (glob_hit(tank, map, arr, x, (int)tempY) == FALSE)
+			tempMap[x][(int)tempY] = '*';
+		else {
+			tank->shotTable[1][0]++;
+			tempMap[x][(int)tempY] = 'X';
+			break;
+		}
 	}
 	PrintBoard(tempMap);
-}
-int hit(Tank* tank, char map[N][M], Tank ** arr, int tempX, int tempY, int i, int power, char tempMap[N][M]) {
-	if (map[tempX][(tempY)] == 'A' || map[tempX][(tempY)] == 'B' || map[tempX][(tempY)] == 'C' || map[tempX][(tempY)] == 'D')
-	{
-		switch (map[tempX][(tempY)])
-		{
-		case 'A':
-			arr[0]->life--;
-			printf("HIT ! ! !\n");
-			if (arr[0]->life == 0)
-			{
-				arr[0]->live = FALSE;
-				globalcount--;
-				printf("Player %s is dead.\n", arr[0]->nameP);
-				map[arr[0]->x][arr[0]->y] = ' ';
-			}
-			break;
-		case 'B':
-			arr[1]->life--;
-			printf("HIT ! ! !\n");
-			if (arr[1]->life == 0)
-			{
-				arr[1]->live = FALSE;
-				globalcount--;
-				printf("Player %s is dead.\n", arr[1]->nameP);
-				map[arr[1]->x][arr[1]->y] = ' ';
-			}
-			break;
-		case 'C':
-			arr[2]->life--;
-			printf("HIT ! ! !\n");
-			if (arr[2]->life == 0)
-			{
-				arr[2]->live = FALSE;
-				globalcount--;
-				printf("Player %s is dead.\n", arr[2]->nameP);
-				map[arr[2]->x][arr[2]->y] = ' ';
-			}
-			break;
-		case 'D':
-			arr[3]->life--;
-			printf("HIT ! ! !\n");
-			if (arr[3]->life == 0)
-			{
-				arr[3]->live = FALSE;
-				globalcount--;
-				printf("Player %s is dead.\n", arr[3]->nameP);
-				map[arr[3]->x][arr[3]->y] = ' ';
-			}
-			break;
-		}
-	}
-	if (tempMap[tempX][(int)round(tempY)] == '|')
-		return power;
-	else if (tempX > N - 1 || tempX < 0 || tempY < 0 || tempY >M - 1)
-		return power;
-	else if (tempMap[tempX][(int)round(tempY)] == 'A' || tempMap[tempX][(int)round(tempY)] == 'B' || tempMap[tempX][(int)round(tempY)] == 'C' || tempMap[tempX][(int)round(tempY)] == 'D')
-	{
-		tempMap[tempX][(int)round(tempY)] = 'X';
-		return power;
-	}
-	else
-	{
-		tempMap[tempX][(int)round(tempY)] = '*'; //print 1 shot 
-		return i;
-	}
-
 }
 
 bool glob_hit(Tank* tank, char map[N][M], Tank ** arr, int x, int y) {
 	int i;
-	if ((map[x][y] == 'A' || map[x][y] == 'B' || map[x][y] == 'C' || map[x][y] == 'D') && tank->x != x && tank->y != y)
+	if ((map[x][y] == 'A' || map[x][y] == 'B' || map[x][y] == 'C' || map[x][y] == 'D') && map[x][y]!=tank->name)
 	{
 		switch (map[x][y])
 		{
 		case 'A':
 			i = 0;
+			prev_tank[2] = 0;
 			break;
 		case 'B':
+			prev_tank[2] = 1;
 			i = 1;
 			break;
 		case 'C':
+			prev_tank[2] = 2;
 			i = 2;
 			break;
 		case 'D':
+			prev_tank[2] = 3;
 			i = 3;
 			break;
 		default:
@@ -448,6 +506,7 @@ bool glob_hit(Tank* tank, char map[N][M], Tank ** arr, int x, int y) {
 			printf("Player %s is dead.\n", arr[0]->nameP);
 			map[arr[i]->x][arr[i]->y] = ' ';
 		}
+		prev_tank[1] = 1;
 		return TRUE;
 	}
 	return FALSE;
@@ -612,6 +671,8 @@ void Steep_path(Tank* tank, char map[N][M], Tank **arr)
 			}
 			if (glob_hit(tank, map, arr, j, temp_y) == TRUE)
 			{
+				tank->shotTable[1][1]++;
+				tempmap[j][temp_y] = 'X';
 				done = TRUE;
 				break;
 			}
@@ -631,6 +692,8 @@ void Steep_path(Tank* tank, char map[N][M], Tank **arr)
 			}
 			if (glob_hit(tank, map, arr, j, temp_y) == TRUE)
 			{
+				tank->shotTable[1][1]++;
+				tempmap[j][temp_y] = 'X';
 				done = TRUE;
 				break;
 			}
@@ -648,6 +711,8 @@ void Steep_path(Tank* tank, char map[N][M], Tank **arr)
 			break;
 		if (glob_hit(tank, map, arr, x, real_y) == TRUE)
 		{
+			tank->shotTable[1][1]++;
+			tempmap[x][real_y] = 'X';
 			done = TRUE;
 			break;
 		}
@@ -668,7 +733,7 @@ double make_a_positive(double a) {
 
 void CrazySheep(Tank* tank, char map[N][M], Tank ** arr)
 {
-	int power = 0, index = 0, a, b, My_NewPI = 21, y = 0, max, direct;
+	int power = 0, index = 0, a, b, My_NewPI = 28, y = 0, max, direct,k;
 	double angel = 0, x = 0;
 	char tempMap[N][M];
 	for (int i = 0; i<N; i++)
@@ -683,42 +748,10 @@ void CrazySheep(Tank* tank, char map[N][M], Tank ** arr)
 		direct = 1;
 	printf("Please enter a,b  \n");
 	scanf("%d%d", &a, &b);
-	/*double radian = angel / 180 * M_PI; // convert to radian
-	//double radian = tan(angel);
-	tempX = tank->x;
-	tempY = tank->y;
-	for (int i = 1; i <= power; i++)
-	{
-	if (angel < 90)
-	{
-	tempX = tempX - radian;
-	tempY = tempY + 1;
-	}
-	else if (angel > 90 && angel < 180)
-	{
-	tempX = tempX - radian;
-	tempY = tempY - 1;
-	}
-	else if (angel > 180 && angel < 270)
-	{
-	tempX = tempX + radian;
-	tempY = tempY - 1;
-	}
-	else if (angel > 270 && angel < 360)
-	{
-	tempX = tempX + radian;
-	tempY = tempY + 1;
-	}
-	else if (angel == 0 || angel == 360)
-	tempY = tempY + 1;
-	else if (angel == 90)
-	tempX = tempX - radian;
-	else if (angel == 180)
-	tempY = tempY - 1;
-	else if (angel == 270)
-	tempX = tempX + radian;*/
 	x = tank->x;
 	y = tank->y;
+	if (b <= 2)
+		b=3;
 	My_NewPI = My_NewPI / b; // sin cycle
 	if (My_NewPI % 2 == 0)
 		My_NewPI++;
@@ -726,65 +759,48 @@ void CrazySheep(Tank* tank, char map[N][M], Tank ** arr)
 	angel = a / max;
 	while (tempMap[(int)x][y] == ' ' || tempMap[(int)x][y] == tank->name || tempMap[(int)x][y] == '*' && (x > 0 && x < N - 1 && y>0 && y < M - 1))
 	{
-
-		//tempMap[(int)x + a][y + max] = '*';
-
 		for (int i = 0; i < max; i++)
 		{
 			x = round(x - angel);
 			y = y + direct;
-
-			//i = hit(tank, map, arr, (int)x, (int)y, i, max, tempMap);
+		
+			
 			if (map[(int)x][y] == 'A' || map[(int)x][y] == 'B' || map[(int)x][y] == 'C' || map[(int)x][y] == 'D')
 			{
+				prev_tank[1] = 1;
+				tank->shotTable[1][3]++;
 				switch (map[(int)x][y])
 				{
 				case 'A':
-					arr[0]->life--;
-					printf("HIT ! ! !\n");
-					if (arr[0]->life == 0)
-					{
-						arr[0]->live = FALSE;
-						globalcount--;
-						printf("Player %s is dead.\n", arr[0]->nameP);
-						map[arr[0]->x][arr[0]->y] = ' ';
-					}
+					k = 0;
+					prev_tank[2] = 0;
 					break;
 				case 'B':
-					arr[1]->life--;
-					printf("HIT ! ! !\n");
-					if (arr[1]->life == 0)
-					{
-						arr[1]->live = FALSE;
-						globalcount--;
-						printf("Player %s is dead.\n", arr[1]->nameP);
-						map[arr[1]->x][arr[1]->y] = ' ';
-					}
+					k = 1;
+					prev_tank[2] = 1;
 					break;
 				case 'C':
-					arr[2]->life--;
-					printf("HIT ! ! !\n");
-					if (arr[2]->life == 0)
-					{
-						arr[2]->live = FALSE;
-						globalcount--;
-						printf("Player %s is dead.\n", arr[2]->nameP);
-						map[arr[2]->x][arr[2]->y] = ' ';
-					}
+					k = 2;
+					prev_tank[2] = 2;
 					break;
 				case 'D':
-					arr[3]->life--;
-					printf("HIT ! ! !\n");
-					if (arr[3]->life == 0)
-					{
-						arr[3]->live = FALSE;
-						globalcount--;
-						printf("Player %s is dead.\n", arr[3]->nameP);
-						map[arr[3]->x][arr[3]->y] = ' ';
-					}
+					k = 3;
+					prev_tank[2] = 3;
+					break;
+				default:
 					break;
 				}
+				arr[k]->life--;
+				printf("HIT ! ! !\n");
+				if (arr[k]->life == 0)
+				{
+					arr[k]->live = FALSE;
+					globalcount--;
+					printf("Player %s is dead.\n", arr[k]->nameP);
+					map[arr[k]->x][arr[k]->y] = ' ';
+				}
 			}
+			
 			else if (map[(int)x][y] == '|')
 			{
 				PrintBoard(tempMap);
@@ -812,52 +828,37 @@ void CrazySheep(Tank* tank, char map[N][M], Tank ** arr)
 
 			if (map[(int)x][y] == 'A' || map[(int)x][y] == 'B' || map[(int)x][y] == 'C' || map[(int)x][y] == 'D')
 			{
+				prev_tank[1] = 1;
+				tank->shotTable[1][3]++;
 				switch (map[(int)x][y])
 				{
 				case 'A':
-					arr[0]->life--;
-					printf("HIT ! ! !\n");
-					if (arr[0]->life == 0)
-					{
-						arr[0]->live = FALSE;
-						globalcount--;
-						printf("Player %s is dead.\n", arr[0]->nameP);
-						map[arr[0]->x][arr[0]->y] = ' ';
-					}
+					k = 0;
+					prev_tank[2] = 0;
 					break;
 				case 'B':
-					arr[1]->life--;
-					printf("HIT ! ! !\n");
-					if (arr[1]->life == 0)
-					{
-						arr[1]->live = FALSE;
-						globalcount--;
-						printf("Player %s is dead.\n", arr[1]->nameP);
-						map[arr[1]->x][arr[1]->y] = ' ';
-					}
+					k = 1;
+					prev_tank[2] = 1;
 					break;
 				case 'C':
-					arr[2]->life--;
-					printf("HIT ! ! !\n");
-					if (arr[2]->life == 0)
-					{
-						arr[2]->live = FALSE;
-						globalcount--;
-						printf("Player %s is dead.\n", arr[2]->nameP);
-						map[arr[2]->x][arr[2]->y] = ' ';
-					}
+					k = 2;
+					prev_tank[2] = 2;
 					break;
 				case 'D':
-					arr[3]->life--;
-					printf("HIT ! ! !\n");
-					if (arr[3]->life == 0)
-					{
-						arr[3]->live = FALSE;
-						globalcount--;
-						printf("Player %s is dead.\n", arr[3]->nameP);
-						map[arr[3]->x][arr[3]->y] = ' ';
-					}
+					k = 3;
+					prev_tank[2] = 3;
 					break;
+				default:
+					break;
+				}
+				arr[k]->life--;
+				printf("HIT ! ! !\n");
+				if (arr[k]->life == 0)
+				{
+					arr[k]->live = FALSE;
+					globalcount--;
+					printf("Player %s is dead.\n", arr[k]->nameP);
+					map[arr[k]->x][arr[k]->y] = ' ';
 				}
 			}
 			if (map[(int)x][y] == '|')
@@ -884,21 +885,5 @@ void CrazySheep(Tank* tank, char map[N][M], Tank ** arr)
 		}
 		angel = angel*(-1);
 	}
-
-	/*
-	//printf("\n");
-	if (tempMap[tempX][(int)round(tempY)] == '|')
-	i = power;
-	else if (tempX > N - 1 || tempX < 0 || tempY <0 || tempY >M - 1)
-	i = power;
-	else if (tempMap[tempX][(int)round(tempY)] == 'A' || tempMap[tempX][(int)round(tempY)] == 'B' || tempMap[tempX][(int)round(tempY)] == 'C' || tempMap[tempX][(int)round(tempY)] == 'D')
-	{
-	tempMap[tempX][(int)round(tempY)] = 'X';
-	i = power;
-	}
-	else
-	tempMap[tempX][(int)round(tempY)] = '*'; //print 1 shot
-	}
-	//tempY = round(tempY); // final Y index.*/
 	PrintBoard(tempMap);
 }
