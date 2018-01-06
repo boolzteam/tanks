@@ -51,17 +51,17 @@ void CrazySheep(Tank* tank, char map[N][M], Tank ** arr);
 bool glob_hit(Tank* tank, char map[N][M], Tank ** arr, int x, int y);
 double make_a_positive(double);
 void extractFile(Tank**Arr, char* AdminID,int players);
+int check_two_nums(char num1, char num2, char[M]);
 
 int main()
 {
 
 	//bool *test[7];
 	int admin;
-	char GameBoard[50][224],AdminID[M];
+	char GameBoard[50][224],AdminID[M], play_char[M];
 	BuildMap(GameBoard);
 	PrintBoard(GameBoard);
-	printf("Admin accsess?1-Yes,0-No\n");
-	scanf("%d", &admin);
+	admin = check_two_nums('1', '0', "Admin accsess?1-Yes,0-No\n");
 	if (admin == 1)
 	{
 		printf("Enter the admin ID \n");
@@ -71,10 +71,21 @@ int main()
 	}
 	int players = 5;
 	Tank ** Arr = NULL;
-	while (players > 4 || players < 2)
+	getchar();
+	while (1)//בדיקת קלט תקין
 	{
 		printf("Enter number of players\n");
-		scanf("%d", &players);
+		gets(play_char);
+		if (play_char[0] != '2'&& play_char[0] != '3'&& play_char[0] != '4' || strlen(play_char)>1)
+		{
+			printf("Wrong Input,Try again!\n");
+			continue;
+		}
+		else
+		{
+			players = play_char[0] - '0';
+			break;
+		}
 	}
 	Arr = initialize(players, GameBoard);
 	PrintBoard(GameBoard);
@@ -262,11 +273,12 @@ Tank ** initialize(int players, char Board[N][M])
 }
 void Play(char Board[N][M], Tank** Arr, int players)
 {
-	char guide[M];
+	char guide[M], str[M];
 	globalcount = players;
 	int choose,tries=4,guide_flag=0;
-	printf("Guide access? 1-Yes  0-No\n");
-	scanf("%d", &choose);
+	choose = check_two_nums('1', '0', "Guide access? 1-Yes, 0-No\t");
+	//printf("Guide access? 1-Yes  0-No\n");
+	//scanf("%d", &choose);
 	if (choose)
 	{
 		do {
@@ -291,15 +303,15 @@ void Play(char Board[N][M], Tank** Arr, int players)
 				prev_tank[4] = Arr[i]->y;
 				prev_tank[0] = i;
 				printf("Its %s turn!\n", Arr[i]->nameP);
-				printf("would you like to move?1-Yes,0-No\t");
-				scanf("%d", &choose);
+				choose = check_two_nums('1', '0', "would you like to move? 1-Yes, 0-No\t");
 				if (choose)
 					Move(Arr[i], Board);
 				Shoot(Arr[i], Board, Arr);
 				if (guide_flag)
 				{
-					printf("Guide access, Do you want to try this turn again? 1-Yes  0-No\n");
-					scanf("%d", &choose);
+					choose = check_two_nums('1', '0', "Guide access, Do you want to try this turn again? 1-Yes, 0-No\t");
+					//printf("? 1-Yes  0-No\n");
+					//scanf("%d", &choose);
 					if (choose)
 					{
 
@@ -325,15 +337,16 @@ void Play(char Board[N][M], Tank** Arr, int players)
 	}
 	for (int i = 0; i < players; i++)
 		if (Arr[i]->live == TRUE)
-			printf("\n%s won the game!\n", Arr[i]->nameP);
+			printf("\nCongratulations %s You Won The Game!\n", Arr[i]->nameP);
 }
 void Move(Tank* tank, char Board[N][M])
 {
+	
+	char str[M];
 	PrintBoard(Board);
 	int choose, step;
 	Board[tank->x][tank->y] = ' ';
-	printf("What direction you want to move? Left-1, Right-2 \t");
-	scanf("%d", &choose);
+	choose = check_two_nums('2', '1', "What direction would you like to move? Left-1, Right-2\t");
 	printf("Enter how many steps do you want to move\t");
 	scanf("%d", &step);
 	while (step > 50 || step < 0)
@@ -887,3 +900,28 @@ void CrazySheep(Tank* tank, char map[N][M], Tank ** arr)
 	}
 	PrintBoard(tempMap);
 }
+
+int check_two_nums(char num1, char num2, char msg[M])
+{
+	char str[M];
+	int choose;
+	getchar();
+	while (1)//בדיקת קלט תקין במחרוזת
+	{
+		
+		printf("%s",msg);
+		gets(str);
+		if (str[0] !=  num1 && str[0] != num2 || strlen(str) > 1)
+		{
+			printf("Wrong Input,Try again!\n");
+			continue;
+		}
+		else
+		{
+			choose = str[0] - '0';
+			break;
+		}
+	}
+	return choose;
+}
+
