@@ -45,7 +45,7 @@ void Steep_path(Tank* tank, char map[N][M], Tank **arr);
 void CrazySheep(Tank* tank, char map[N][M], Tank ** arr);
 int hit(Tank* tank, char map[N][M], Tank ** arr, int tempX, int tempY, int i, int power, char tempMap[N][M]);
 bool glob_hit(Tank* tank, char map[N][M], Tank ** arr, int x, int y);
-
+double make_a_positive(double);
 int main()
 {
 
@@ -60,7 +60,6 @@ int main()
 	{
 		printf("Enter number of players\n");
 		scanf("%d", &players);
-		_flushall();
 	}
 	Arr = initialize(players, GameBoard);
 	PrintBoard(GameBoard);
@@ -145,32 +144,16 @@ Tank ** initialize(int players, char Board[N][M])
 	Tank ** Arr = (Tank**)malloc((sizeof(Tank))*players);
 	for (int i = 0; i < players; i++, c++)
 	{
-
 		Arr[i] = (Tank*)malloc(sizeof(Tank));
 		Arr[i]->live = TRUE;
 		Arr[i]->life = 2;
 		Arr[i]->name = c;
 		printf("Enter the name of player %d\n", i + 1);
 		scanf("%s", &Arr[i]->nameP);
-		while (!flag_ID)
-		{
-			j = 0;//counter to id
-			counter_ID = 0;
-			printf("Enter the ID of player %d (9 numbers)\n", i + 1);
+		printf("Enter the ID of player %d (9 digits)\n", i + 1);
+		do {
 			scanf("%s", &Arr[i]->ID);
-			while (((Arr[i]->ID)[j]) != '\0')
-			{
-				if (((Arr[i]->ID)[j]) < '10' && ((Arr[i]->ID)[j]) >= '0')
-					counter_ID++;
-				j++;
-
-			}
-			if (counter_ID == 9)
-				flag_ID = TRUE;
-			else
-				printf("worng ID try again if your id less then 9 numbers put 0 in begain\n");
-		}
-		flag_ID = FALSE;
+		} while (Test_ID(Arr[i]->ID) == FALSE);
 		if (i == players - 1)
 		{
 			switch (players)
@@ -569,13 +552,17 @@ void Guided_Missile(Tank* tank, char map[N][M])
 }
 bool Test_ID(char* id)//return true if id has 9 nums 
 {
-	int idsize;
-	idsize = strlen(id);
-	if (idsize != 9)
+	if (strlen(id) != 9)
+	{
+		printf("Wrong input! ID number consist 9 digits only, Please try again\n");
 		return FALSE;
-	for (int i = 0; i < idsize; i++)
-		if (id[i]<'0' || id[i]>'9')
+	}
+	for (int i = 0; id[i] != '\0'; i++)
+		if (id[i] > '9' || id[i] < '0')
+		{
+			printf("Wrong input! ID number consist 9 digits only, Please try again\n");
 			return FALSE;
+		}
 	return TRUE;
 }
 
@@ -601,11 +588,13 @@ void Steep_path(Tank* tank, char map[N][M], Tank **arr)
 			direction = 2;
 		else
 		{
-			printf("worng insert please try again!\nplease read the inructions!\n");
+			printf("Worng input, Please try again!\nPlease read the instructions!\n");
 		}
 	} while (d != '1' && d != '2');
-	printf("Enter coefficients of Quadratic equation aX^2 + bX +c (a,b,c): \n");
+	printf("Enter coefficients of Quadratic Equation aX^2 + bX +c (a,b,c): \n");
 	scanf("%lf%lf%lf", &a, &b, &c);
+	if (a >= 0)
+		a = make_a_positive(a);
 	for (int i = 0; i < 2 * M && done == FALSE; i++) //axel wide
 	{
 		dx = N - 1 - tankx;
@@ -626,7 +615,8 @@ void Steep_path(Tank* tank, char map[N][M], Tank **arr)
 				done = TRUE;
 				break;
 			}
-			tempmap[j][temp_y] = '*';
+			if (tempmap[j][temp_y] == ' ')
+				tempmap[j][temp_y] = '*';
 		}
 		for (int j = N - dx - (int)round(prev_y); j < N - dx - (int)round(y) && done == FALSE; j++)//print down
 		{
@@ -644,7 +634,8 @@ void Steep_path(Tank* tank, char map[N][M], Tank **arr)
 				done = TRUE;
 				break;
 			}
-			tempmap[j][temp_y] = '*';
+			if(tempmap[j][temp_y]==' ')
+				tempmap[j][temp_y] = '*';
 		}
 
 		x = N - 1 - dx - (int)round(y);
@@ -660,159 +651,21 @@ void Steep_path(Tank* tank, char map[N][M], Tank **arr)
 			done = TRUE;
 			break;
 		}
-		if (y > prev_y)
+		if (y > prev_y && tempmap[x][real_y]==' ')
 			tempmap[x][real_y] = '*';
 		prev_y = y;
 	}
-	for (int i = 0; i<N; i++)
-	{
-		for (int j = 0; j < M; j++)
-			printf("%c", tempmap[i][j]);
-		printf("\n");
-	}
-	return 0;
+	PrintBoard(tempmap);
 }
-/////////////////////////////////////////////////////////
-/*
-void Steep_path(Tank* tank, char map[N][M], Tank **arr)
-{
-	int y = 1, x, k = 0, ykod, tankodx, tankody;
-	double  xkod, a, b, c, m;
-	char tempMap[N][M];
-	for (int i = 0; i<N; i++)
-		for (int j = 0; j<M; j++)
-			tempMap[i][j] = map[i][j];
-	printf("Enter coefficients of Quadratic equation aX^2 + bX +c (a,b,c): \n");
-	scanf("%lf%lf%lf", &a, &b, &c);
-	xkod = (-b) / (2 * a);
-	ykod = (int)round(a*xkod*xkod + b*xkod + c);
-	xkod = (int)round(xkod);
-	tankodx = tank->x - ykod;
-	tankody = tank->y + xkod;
-	if (tankodx < 0 || tankody < 0 || tankodx >= N || tankody >= M)
-		printf("out of board\n");
-	else
-	{
-		m = (double)(tank->x - tankodx) / (double)(tank->y - tankody);
-		if (b < 0)
-			m *= (-1);
-		for (int i = 0; i < (tankody - tankodx); i++)
-		{
-			x = (int)round(tankodx - m*(i + 1));
-			y = tankody + i;
-			if (x >= 0 && x < N && y >= 0 && y < M && tempMap[x][y] != '|') {
-				if (b < 0) {
-					if (map[x][y] == 'A' || map[x][y] == 'B' || map[x][y] == 'C' || map[x][y] == 'D')
-					{
-						switch (map[x][y])
-						{
-						case 'A':
-							arr[0]->life--;
-							printf("HIT ! ! !\n");
-							if (arr[0]->life == 0)
-							{
-								arr[0]->live = FALSE;
-								printf("Player A is dead.\n");
-								map[arr[0]->x][arr[0]->y] = ' ';
-							}
-							break;
-						case 'B':
-							arr[1]->life--;
-							printf("HIT ! ! !\n");
-							if (arr[1]->life == 0)
-							{
-								arr[1]->live = FALSE;
-								printf("Player B is dead.\n");
-								map[arr[1]->x][arr[1]->y] = ' ';
-							}
-							break;
-						case 'C':
-							arr[2]->life--;
-							printf("HIT ! ! !\n");
-							if (arr[2]->life == 0)
-							{
-								arr[2]->live = FALSE;
-								printf("Player C is dead.\n");
-								map[arr[2]->x][arr[2]->y] = ' ';
-							}
-							break;
-						case 'D':
-							arr[3]->life--;
-							printf("HIT ! ! !\n");
-							if (arr[3]->life == 0)
-							{
-								arr[3]->live = FALSE;
-								printf("Player D is dead.\n");
-								map[arr[3]->x][arr[3]->y] = ' ';
-							}
-							break;
-						}
-					}
 
-				}
-				tempMap[x][y] = '*';
-			}
-			y = tankody - i;
-			if (x >= 0 && x < N && y >= 0 && y < M && tempMap[x][y] != '|') {
-				if (b > 0)
-				{
-					if (map[x][y] == 'A' || map[x][y] == 'B' || map[x][y] == 'C' || map[x][y] == 'D')
-					{
-						switch (map[x][y])
-						{
-						case 'A':
-							arr[0]->life--;
-							printf("HIT ! ! !\n");
-							if (arr[0]->life == 0)
-							{
-								arr[0]->live = FALSE;
-								printf("Player A is dead.\n");
-								map[arr[0]->x][arr[0]->y] = ' ';
-							}
-							break;
-						case 'B':
-							arr[1]->life--;
-							printf("HIT ! ! !\n");
-							if (arr[1]->life == 0)
-							{
-								arr[1]->live = FALSE;
-								printf("Player B is dead.\n");
-								map[arr[1]->x][arr[1]->y] = ' ';
-							}
-							break;
-						case 'C':
-							arr[2]->life--;
-							printf("HIT ! ! !\n");
-							if (arr[2]->life == 0)
-							{
-								arr[2]->live = FALSE;
-								printf("Player C is dead.\n");
-								map[arr[2]->x][arr[2]->y] = ' ';
-							}
-							break;
-						case 'D':
-							arr[3]->life--;
-							printf("HIT ! ! !\n");
-							if (arr[3]->life == 0)
-							{
-								arr[3]->live = FALSE;
-								printf("Player D is dead.\n");
-								map[arr[3]->x][arr[3]->y] = ' ';
-							}
-							break;
-						}
-					}
-				}
-				tempMap[x][y] = '*';
-			}
+double make_a_positive(double a) {
+	do {
+		printf("'a' must be a negative number, please change your choise\n");
+		scanf("%lf", &a);
+	} while (a >= 0);
+	return a;
+}
 
-		}
-
-	}
-	//if (k < 0 || k >= N || i < 0 || i >= M || tempMap[k][i] == '|')
-	PrintBoard(tempMap);
-}*/
-///////////////////////////////////////
 void CrazySheep(Tank* tank, char map[N][M], Tank ** arr)
 {
 	int power = 0, index = 0, a, b, My_NewPI = 21, y = 0, max, direct;
@@ -822,13 +675,13 @@ void CrazySheep(Tank* tank, char map[N][M], Tank ** arr)
 		for (int j = 0; j<M; j++)
 			tempMap[i][j] = map[i][j];
 	printf("Y = a * sin (b*x)\n\n");
-	printf("which direction do you want to shot?1-Left,2-Right  ");
+	printf("Which direction do you want to shoot?1-Left,2-Right  ");
 	scanf("%d", &direct);
 	if (direct == 1)
 		direct = -1;
 	else
 		direct = 1;
-	printf("please enter a,b  \n");
+	printf("Please enter a,b  \n");
 	scanf("%d%d", &a, &b);
 	/*double radian = angel / 180 * M_PI; // convert to radian
 	//double radian = tan(angel);
