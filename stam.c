@@ -43,7 +43,7 @@ void Move(Tank* tank, char Board[N][M]);
 void Shoot(Tank* tank, char Board[N][M], Tank** Arr);
 void Directshot(Tank* tank, char map[N][M], Tank ** arr);
 void BuildMap(char map[N][M]);
-void Guided_Missile(Tank* tank, char map[N][M]);
+void Guided_Missile(Tank* tank, char map[N][M], Tank **arr);
 double Log_By_Base(double value, double wanted_base);
 bool Test_ID(char* id);
 void Steep_path(Tank* tank, char map[N][M], Tank **arr);
@@ -55,8 +55,10 @@ int check_two_nums(char num1, char num2, char[M]);
 
 int main()
 {
-
+	char buffer[M];
 	//bool *test[7];
+	printf("Press any key to start the game\n");
+	scanf("%s", &buffer);
 	int admin;
 	char GameBoard[50][224],AdminID[M], play_char[M];
 	BuildMap(GameBoard);
@@ -397,7 +399,7 @@ void Shoot(Tank* tank, char Board[N][M], Tank** Arr)
 		tank->shotTable[0][1]++;
 		break;
 	case 3:
-		Guided_Missile(tank, Board);
+		Guided_Missile(tank, Board,Arr);
 		tank->shotTable[0][2]++;
 		break;
 	case 4:
@@ -531,6 +533,110 @@ double Log_By_Base(double value, double wanted_base)
 	newVal = log(value) / log(wanted_base);
 	return newVal;
 }
+
+void Guided_Missile(Tank* tank, char map[N][M], Tank **arr)
+{
+	bool done = FALSE;
+	double x = 0, y, b = 0;
+	int a, direction = 0, diffrence;
+	char tempMap[N][M];
+	for (int i = 0; i < N; i++)
+		for (int j = 0; j < M; j++)
+			tempMap[i][j] = map[i][j];
+	printf("Enter which direction you want to shoot, Left - 1, Right - 2\n");
+	scanf("%d", &direction);
+	do {
+		printf("Enter log base and a value:\n");
+		scanf("%lf%d", &b, &a);
+		if (b <= 0 || b == 1)
+			printf("Log base can not be 1 ,0 or negetive, Try again!\n");
+	} while (b <= 0 || b == 1);
+	y = tank->y;
+	x = tank->x;
+	int i = 0;
+	for (int k = 1; k < a + 2; k++)
+		tempMap[(int)x - k][(int)y] = '*';
+
+	diffrence = Log_By_Base(a, b);
+	x -= a + 2;
+	while (y>0 && y < M - 1 && tempMap[(int)x][(int)y] != '|'&& x>0 && x < N - 1)
+	{
+		int prev = y - diffrence;
+		if (direction == 2)
+			y = y + diffrence;
+		else
+			y = y - diffrence;
+		for (int i = y; i < y + diffrence; i++)
+		{
+			if (i < M - 1 && i>0)
+			{
+				if (tempMap[(int)x][i] == '|' || glob_hit(tank, map, arr, (int)x, i) == TRUE)
+				{
+					for (int j = diffrence - 1; j > 0;)
+					{
+						if (diffrence < 3)
+							break;
+						if (direction == 2)
+						{
+							if (tempMap[(int)x][i - j] != '|')
+								j--;
+							else
+							{
+								tempMap[(int)x][i - j - 1] = '*';
+								break;
+							}
+						}
+						else if (direction == 1)
+						{
+
+							if (tempMap[(int)x][i + j] != '|')
+								j--;
+							else
+							{
+								tempMap[(int)x][i + j + 1] = '*';
+								break;
+							}
+
+						}
+						if (j == 1)
+						{
+							if (direction == 2)
+							{
+								if (tempMap[(int)x][i - 1] == ' ')
+								{
+									tempMap[(int)x][i - 1] = '*';
+									break;
+								}
+
+							}
+							else if (direction == 1)
+							{
+								if (tempMap[(int)x][i + 1] == ' ')
+								{
+									tempMap[(int)x][i + 1] = '*';
+									break;
+								}
+							}
+						}
+					}
+					done = TRUE;
+					break;
+				}
+			}
+			else
+				break;
+		}
+		if (tempMap[(int)x][(int)y] == '|' || done == TRUE)
+			break;
+		if (tempMap[(int)x][(int)y] == ' ' && y < M - 1 && y>0)
+			tempMap[(int)x][(int)y] = '*';
+		diffrence++;
+		x--;
+	}
+	PrintBoard(tempMap);
+}
+
+/*
 void Guided_Missile(Tank* tank, char map[N][M])
 {
 	int power = 0, dir = 0, index = 0, tempX = 0, x, y;
@@ -622,6 +728,7 @@ void Guided_Missile(Tank* tank, char map[N][M])
 	//	tempMap[tempX][(int)round(tempY)] = '*'; //print 1 shot
 	PrintBoard(tempMap);
 }
+*/
 bool Test_ID(char* id)//return true if id has 9 nums 
 {
 	if (strlen(id) != 9)
